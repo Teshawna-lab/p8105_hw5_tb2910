@@ -30,11 +30,7 @@ homicide_df =
   relocate(city_state) %>%
   filter(city_state != "TulsaAL")
 ```
-
-```{r}
-view(df)
-```
-
+The raw data is has 52,179 rows of data, with 12 variables. 
 
 For city Baltimore, MD
 ```{r}
@@ -111,6 +107,58 @@ homicide_df %>%
   select(city_state, estimate, starts_with("conf"))
 ```
 
+## Question 2
+Create and clean dataframe 
+```{r, warning=FALSE, message=FALSE}
+files_df <- tibble(
+  files = list.files("./data")) %>%
+  mutate(files = str_c("data", files, sep = "/"))
+research_df <- files_df %>%
+  mutate(respondents = map(files, read_csv)) %>%
+  mutate(study_arm = case_when(str_detect(files, "exp") ~ "Experiment",
+                               str_detect(files, "con") ~ "Control"),
+         participant_number = as.factor(parse_number(files))) %>%
+  unnest(respondents) %>%
+  pivot_longer(cols = week_1:week_8, names_to = "week", values_to = "observations") %>%
+  mutate(week = as.numeric(parse_number(week)))
+```
+
+Create spaghetti graph of observations over time split by study arm
+```{r, warning=FALSE, message=FALSE}
+research_df %>%
+  ggplot(aes(x = week, y = observations, color = participant_number)) +
+  geom_line() +
+  ylab("Observations") +
+  xlab("Weeks") +
+  facet_grid(cols = vars(study_arm)) +
+  ggtitle("Observations for each arm over Time ")
+```
+
+For the spaghetti plot, we see that participants in the control arm report similar observations over time. In contrast, participants in the experimental arm report different observations over time.
 
 
+## Question 3
+```{r}
+set.seed(10)
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species))
+```
+
+Writing function & Testing 
+```{r}
+iris_missing_function = function(x) {
+  if (is_numeric(x)) {
+    mean_nonmissing = round(mean(x, na.rm = TRUE, 1))
+    x = replace_na(x, mean_nonmissing)}
+  else if (is.character(x)) {
+    x = replace_na(x, "virginica")}
+  return(x)
+}
+iris_fillin = 
+  map_df(iris_with_missing, iris_missing_function) %>% 
+  as.tibble()
+knitr::kable(iris_fillin)
+view(iris_fillin)
+```
 
