@@ -30,7 +30,6 @@ homicide_df =
   relocate(city_state) %>%
   filter(city_state != "TulsaAL")
 ```
-The raw data is has 52,179 rows of data, with 12 variables. 
 
 For city Baltimore, MD
 ```{r}
@@ -106,6 +105,8 @@ homicide_df %>%
   unnest(tidy_results) %>%
   select(city_state, estimate, starts_with("conf"))
 ```
+The raw data from the Washington Post includes `r nrow(homicide_df)` rows and `r ncol(homicide_df)` columns. The data in this dataset includes `r colnames(homicide_df)`
+
 
 ## Question 2
 Create and clean dataframe 
